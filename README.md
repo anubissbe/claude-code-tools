@@ -2,6 +2,15 @@
 
 A comprehensive toolkit that enhances Claude Code's capabilities with powerful bash scripts, Python utilities, and automation tools.
 
+## 💖 Support This Project
+
+If you find Claude Code Tools helpful, consider supporting its development:
+
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-pink?logo=github)](https://github.com/sponsors/anubissbe)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-yellow?logo=buy-me-a-coffee)](https://buymeacoffee.com/anubissbe)
+
+Your support helps maintain and improve these tools! ☕
+
 ## 🚀 Quick Start
 
 ```bash
@@ -346,3 +355,40 @@ Feel free to:
 - Create custom aliases
 
 The toolkit is designed to be extensible and adaptable to your workflow!
+
+## 💖 Sponsorship
+
+### Why Sponsor?
+
+Claude Code Tools is an open-source project developed and maintained in my spare time. Your sponsorship helps:
+
+- 🚀 Develop new features and tools
+- 🐛 Fix bugs and improve reliability  
+- 📚 Create better documentation
+- 💻 Test on different platforms
+- ⏰ Dedicate more time to the project
+
+### How to Sponsor
+
+You can support this project through:
+
+1. **GitHub Sponsors** ⭐
+   - [Become a sponsor on GitHub](https://github.com/sponsors/anubissbe)
+   - Monthly sponsorship tiers available
+   - Get recognized as a sponsor
+
+2. **Buy Me a Coffee** ☕
+   - [One-time or monthly support](https://buymeacoffee.com/anubissbe)
+   - Quick and easy way to show appreciation
+   - Support with any amount
+
+### Sponsors
+
+Thank you to all sponsors! Your support makes this project possible.
+
+<!-- sponsors -->
+<!-- sponsors -->
+
+---
+
+Made with ❤️ by the Claude Code Tools community
