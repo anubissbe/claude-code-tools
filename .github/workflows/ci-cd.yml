@@ -1,0 +1,164 @@
+# Minimal Node.js CI/CD Pipeline
+# For: Simple Node.js tools, utilities, and packages
+# Self-hosted runners: 192.168.1.16 with 20 available runners
+
+name: 📦 Minimal Node.js Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # 🔍 Quick Analysis
+  analysis:
+    name: 🔍 Code Analysis
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 10
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Lint check
+        run: npm run lint
+        continue-on-error: true
+
+      - name: 🎯 Type check
+        if: hashFiles('tsconfig.json')
+        run: npm run typecheck
+        continue-on-error: true
+
+      - name: 🔒 Security audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  # 🧪 Testing
+  test:
+    name: 🧪 Test
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        node-version: ['18', '20']
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build
+        run: npm run build
+        continue-on-error: true
+
+      - name: 🧪 Run tests
+        run: npm test
+
+      - name: 📊 Upload coverage
+        if: matrix.node-version == '20'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+        continue-on-error: true
+
+  # 🐳 Docker (Optional)
+  docker:
+    name: 🐳 Docker Build
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 10
+    if: hashFiles('Dockerfile')
+    needs: [analysis, test]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ github.repository }}:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🧪 Test Docker container
+        run: |
+          docker run --rm ${{ github.repository }}:test --version || echo "No version command"
+
+  # 📦 Release
+  release:
+    name: 📦 Release
+    runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 10
+    needs: [test]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build
+        run: npm run build
+        continue-on-error: true
+
+      - name: 📦 Publish to NPM
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish
+        continue-on-error: true
+
+      - name: 🐳 Docker Release (if Dockerfile exists)
+        if: hashFiles('Dockerfile')
+        run: |
+          echo "Building and pushing Docker image..."
+          
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --tag ghcr.io/${{ github.repository }}:${{ github.event.release.tag_name }} \
+            --tag ghcr.io/${{ github.repository }}:latest \
+            --push .
+
+# 📊 Workflow Status Badge
+# Add to README.md:
+# [![Minimal Node.js Pipeline](https://github.com/YOUR_USERNAME/YOUR_REPO/workflows/📦%20Minimal%20Node.js%20Pipeline/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions)
